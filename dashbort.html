@@ -1,0 +1,185 @@
+<?php
+$host = 'localhost';
+$db = 'emc';
+$user = 'username'; // اسم المستخدم
+$pass = 'password'; // كلمة المرور
+
+$conn = new mysqli($host, $user, $pass, $db);
+
+if ($conn->connect_error) {
+    die("Connection failed: " . $conn->connect_error);
+}
+
+$sql = "SELECT type, COUNT(*) AS count FROM requests GROUP BY type";
+$result = $conn->query($sql);
+
+$data = array('verificationCount' => 0, 'certificateCount' => 0, 'academicRecordCount' => 0, 'otherRequestsCount' => 0);
+
+while ($row = $result->fetch_assoc()) {
+    switch ($row['type']) {
+        case 'التحقق':
+            $data['verificationCount'] = $row['count'];
+            break;
+        case 'الشهادات':
+            $data['certificateCount'] = $row['count'];
+            break;
+        case 'السجلات الأكاديمية':
+            $data['academicRecordCount'] = $row['count'];
+            break;
+        default:
+            $data['otherRequestsCount'] += $row['count'];
+            break;
+    }
+}
+
+echo json_encode($data);
+$conn->close();
+?>
+
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>لوحة التحكم</title>
+    <style>
+        body {
+            display: flex;
+        }
+        .sidebar {
+            width: 250px;
+            background-color: #f8f9fa;
+            padding-top: 20px;
+        }
+        .sidebar .nav-link {
+            display: flex;
+            align-items: center;
+        }
+        .center-section {
+            flex-grow: 1;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Header -->
+<nav class="navbar navbar-expand-lg navbar-light bg-light">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#">
+            <img src="path/to/logo.png" alt="شعار كلية الإمارات" style="height: 40px;">
+        </a>
+        <div class="collapse navbar-collapse justify-content-end">
+            <ul class="navbar-nav">
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <img src="path/to/user-icon.png" alt="أيقونة المستخدم" style="height: 30px;"> 
+                        اسم المستخدم
+                    </a>
+                    <ul class="dropdown-menu" aria-labelledby="userDropdown">
+                        <li><a class="dropdown-item" href="#">إعدادات الحساب</a></li>
+                        <li><a class="dropdown-item" href="#">تسجيل الخروج</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">تغيير اللغة</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Sidebar -->
+<div class="sidebar">
+    <ul class="nav flex-column">
+        <li class="nav-item">
+            <a class="nav-link" href="#">
+                <img src="path/to/verification-icon.png" alt="طلبات التحقق" style="height: 20px;"> طلبات التحقق
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">
+                <img src="path/to/certificate-icon.png" alt="طلبات الشهادات" style="height: 20px;"> طلبات الشهادات
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">
+                <img src="path/to/academic-record-icon.png" alt="طلبات السجلات الأكاديمية" style="height: 20px;"> طلبات السجلات الأكاديمية
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">
+                <img src="path/to/verification-letter-icon.png" alt="طلبات الإفادات" style="height: 20px;"> طلبات الإفادات
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">
+                <img src="path/to/delivery-icon.png" alt="طلبات التسليم" style="height: 20px;"> طلبات التسليم
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">
+                <img src="path/to/documentation-icon.png" alt="طلبات التوثيق" style="height: 20px;"> طلبات التوثيق
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">
+                <img src="path/to/users-icon.png" alt="المستخدمين" style="height: 20px;"> المستخدمين
+            </a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" href="#">
+                <img src="path/to/logout-icon.png" alt="خروج" style="height: 20px;"> خروج
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Center Section -->
+<div class="center-section">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">طلبات التحقق</div>
+                <div class="card-body">
+                    <h5 class="card-title" id="verification-count">0</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">طلبات الشهادات</div>
+                <div class="card-body">
+                    <h5 class="card-title" id="certificate-count">0</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">طلبات السجلات الأكاديمية</div>
+                <div class="card-body">
+                    <h5 class="card-title" id="academic-record-count">0</h5>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card text-white bg-success mb-3">
+                <div class="card-header">طلبات أخرى</div>
+                <div class="card-body">
+                    <h5 class="card-title" id="other-requests-count">0</h5>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.3/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    // هنا يمكنك إضافة كود AJAX و Vue.js لجلب البيانات وتحديث الأرقام
+</script>
+
+</body>
+</html>
